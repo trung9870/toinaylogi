@@ -8,3 +8,4 @@ next-env.d.ts
 .DS_Store
 .cache/
 public/actress-cache/
+.vercel

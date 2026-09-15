@@ -8,6 +8,7 @@ import {
   Box,
   CircleHelp,
   ExternalLink,
+  Heart,
   Sparkles,
   Star,
   StarHalf,
@@ -30,6 +31,7 @@ import {
 import { type Actress } from '@/lib/actresses';
 import { copy, type Language } from '@/lib/i18n';
 import { useActressSnapshot } from '@/hooks/use-actress-snapshot';
+import { useFavorites } from '@/hooks/use-favorites';
 import { useLocalSpinCount } from '@/hooks/use-local-spin-count';
 import { useServerSpinCount } from '@/hooks/use-server-spin-count';
 import { usePreferences } from '@/hooks/use-preferences';
@@ -119,12 +121,16 @@ const Card = memo(function Card({
   small = false,
   slot,
   onClick,
+  isFavorite,
+  onToggleFavorite,
 }: {
   actress: Actress;
   language: Language;
   small?: boolean;
   slot?: number;
   onClick?: () => void;
+  isFavorite?: boolean;
+  onToggleFavorite?: () => void;
 }) {
   return (
     <div
@@ -153,7 +159,26 @@ const Card = memo(function Card({
         } as React.CSSProperties
       }
     >
-      <span className="tier">{copy[language].tiers[actress.tier]}</span>
+      <div className="card-top-bar">
+        <span className="tier">{copy[language].tiers[actress.tier]}</span>
+        {onToggleFavorite && (
+          <button
+            className={`heart-bookmark-btn ${isFavorite ? 'active' : ''}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleFavorite();
+            }}
+            aria-label="Toggle favorite"
+            title={isFavorite ? 'Bỏ yêu thích' : 'Yêu thích'}
+          >
+            <Heart
+              size={13}
+              fill={isFavorite ? '#ef4444' : 'none'}
+              stroke={isFavorite ? '#ef4444' : 'currentColor'}
+            />
+          </button>
+        )}
+      </div>
       <ActressImage actress={actress} alt={actress.publicName} />
       <div className="card-copy">
         <strong>{actress.publicName}</strong>
@@ -165,6 +190,8 @@ const Card = memo(function Card({
 export default function Home() {
   const { snapshot, status, error } = useActressSnapshot();
   const preferences = usePreferences();
+  const { favorites, isFavorite, toggleFavorite, count: favoritesCount } = useFavorites();
+  const [filterFavoritesOnly, setFilterFavoritesOnly] = useState(false);
   const { count: localSpins, recordSpin } = useLocalSpinCount();
   const {
     count: serverSpins,
@@ -362,9 +389,14 @@ export default function Home() {
     [allowDirectCardDialog, spinning],
   );
 
+  const filteredActresses = useMemo(() => {
+    if (!filterFavoritesOnly) return eligible;
+    return eligible.filter((actress) => favorites.includes(actress.id));
+  }, [eligible, filterFavoritesOnly, favorites]);
+
   const inventory = useMemo(
     () =>
-      [...eligible]
+      [...filteredActresses]
         .sort(
           (a, b) => b.tier - a.tier || a.publicName.localeCompare(b.publicName),
         )
@@ -374,12 +406,14 @@ export default function Home() {
             actress={actress}
             language={language}
             small
+            isFavorite={isFavorite(actress.id)}
+            onToggleFavorite={() => toggleFavorite(actress.id)}
             onClick={
               allowDirectCardDialog ? () => handleCardClick(actress) : undefined
             }
           />
         )),
-    [eligible, language, allowDirectCardDialog, handleCardClick],
+    [filteredActresses, language, allowDirectCardDialog, handleCardClick, isFavorite, toggleFavorite],
   );
   if (!snapshot)
     return (
@@ -400,6 +434,19 @@ export default function Home() {
           </span>
         </Link>
         <div className="header-actions">
+          <button
+            className={`favorites-header-button ${filterFavoritesOnly ? 'active' : ''}`}
+            onClick={() => setFilterFavoritesOnly(!filterFavoritesOnly)}
+            aria-label="Favorites"
+            title={language === 'vi' ? 'Xem danh sách yêu thích' : 'View favorites'}
+          >
+            <Heart
+              size={15}
+              fill={favoritesCount > 0 ? '#ef4444' : 'none'}
+              stroke={favoritesCount > 0 ? '#ef4444' : 'currentColor'}
+            />
+            <span className="fav-count">{favoritesCount}</span>
+          </button>
           <PreferencesPanel
             preferences={preferences}
             actresses={active}
@@ -688,7 +735,7 @@ export default function Home() {
                   {result.contributingMovies.map((movie) => (
                     <a
                       key={movie.code}
-                      href={`https://www.google.com/search?q=${encodeURIComponent(movie.code)}`}
+                      href={`https://missav.ws/search/${encodeURIComponent(movie.code)}`}
                       target="_blank"
                       rel="noreferrer"
                     >
@@ -744,6 +791,26 @@ export default function Home() {
                     <span>{t.source}</span>
                     <ExternalLink size={16} />
                   </a>
+                  <button
+                    className={`winner-fav-btn ${isFavorite(result.id) ? 'active' : ''}`}
+                    onClick={() => toggleFavorite(result.id)}
+                    title={isFavorite(result.id) ? 'Bỏ yêu thích' : 'Thêm vào yêu thích'}
+                  >
+                    <Heart
+                      size={15}
+                      fill={isFavorite(result.id) ? '#ef4444' : 'none'}
+                      stroke={isFavorite(result.id) ? '#ef4444' : 'currentColor'}
+                    />
+                    <span>
+                      {isFavorite(result.id)
+                        ? language === 'vi'
+                          ? 'Đã thích'
+                          : 'Liked'
+                        : language === 'vi'
+                          ? 'Yêu thích'
+                          : 'Favorite'}
+                    </span>
+                  </button>
                   <button onClick={() => setRevealed(false)}>
                     {t.continue}
                   </button>
@@ -760,6 +827,25 @@ export default function Home() {
                 <h2>
                   {t.items} <span>{eligible.length}</span>
                 </h2>
+                <div className="inventory-tabs">
+                  <button
+                    className={`tab-btn ${!filterFavoritesOnly ? 'active' : ''}`}
+                    onClick={() => setFilterFavoritesOnly(false)}
+                  >
+                    {language === 'vi' ? 'Tất cả' : 'All'} ({eligible.length})
+                  </button>
+                  <button
+                    className={`tab-btn ${filterFavoritesOnly ? 'active' : ''}`}
+                    onClick={() => setFilterFavoritesOnly(true)}
+                  >
+                    <Heart
+                      size={12}
+                      fill={favoritesCount > 0 ? '#ef4444' : 'none'}
+                      stroke={favoritesCount > 0 ? '#ef4444' : 'currentColor'}
+                    />
+                    {language === 'vi' ? 'Yêu thích' : 'Favorites'} ({favoritesCount})
+                  </button>
+                </div>
                 <PreferencesPanel
                   preferences={preferences}
                   actresses={active}

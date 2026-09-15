@@ -5,6 +5,12 @@ import './globals.css';
 export const metadata: Metadata = {
   title: 'Tối Nay Lọ Gì?',
   applicationName: 'Tối Nay Lọ Gì?',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Tối Nay Lọ Gì?',
+  },
   robots: {
     index: false,
     follow: false,
@@ -17,7 +23,11 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#27323b',
+  themeColor: '#10191e',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  viewportFit: 'cover',
 };
 
 export default function RootLayout({
