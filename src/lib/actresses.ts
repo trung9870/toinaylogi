@@ -398,7 +398,6 @@ export function validateSnapshot(input: unknown): ActressSnapshot | null {
       row.appearances < 1
     )
       return null;
-    if (!isFoodAliasForTier(publicName, row.tier as Tier)) return null;
     const aliases = row.aliases
       .map((x) => safeText(x, 120))
       .filter(Boolean) as string[];
