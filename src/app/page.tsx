@@ -398,7 +398,7 @@ export default function Home() {
     () =>
       [...filteredActresses]
         .sort(
-          (a, b) => b.tier - a.tier || a.publicName.localeCompare(b.publicName),
+          (a, b) => b.tier - a.tier || a.name.localeCompare(b.name),
         )
         .map((actress) => (
           <Card

@@ -1,0 +1,23 @@
+# Vercel CLI uses this file INSTEAD of .gitignore to decide what to upload.
+#
+# Deliberately absent from this list: public/actress-cache/
+# That crawled snapshot is the app's data. .gitignore excludes it so the 97
+# profiles and images never enter the public GitHub repo, but the deployment
+# needs them or the client gets 404 on status.json/current.json and renders
+# the "Chưa thể tải dữ liệu cục bộ" error. Refresh it locally with
+# `pnpm data:refresh`, then redeploy to publish the new snapshot.
+
+.git
+node_modules/
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+.env*
+.DS_Store
+.cache/
+.vercel
+
+# Not served by the app: promo video is README-only, tests never run on Vercel.
+assets/
+tests/
