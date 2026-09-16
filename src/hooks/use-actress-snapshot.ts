@@ -76,13 +76,11 @@ export function useActressSnapshot() {
           setSnapshot(next);
         }
         if (live) setError('');
-      } catch {
-        if (
-          live &&
-          !snapshotRef.current &&
-          Date.now() - (startedAt.current ?? Date.now()) > 20_000
-        )
+      } catch (err) {
+        console.warn('[useActressSnapshot] Failed to load snapshot:', err);
+        if (live && !snapshotRef.current) {
           setError('initial-cache-unavailable');
+        }
       }
     };
     void poll();
