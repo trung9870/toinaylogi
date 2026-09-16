@@ -139,7 +139,7 @@ const Card = memo(function Card({
       onClick={onClick}
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
-      aria-label={onClick ? actress.publicName : undefined}
+      aria-label={onClick ? actress.name : undefined}
       onKeyDown={
         onClick
           ? (e) => {
@@ -179,9 +179,9 @@ const Card = memo(function Card({
           </button>
         )}
       </div>
-      <ActressImage actress={actress} alt={actress.publicName} />
+      <ActressImage actress={actress} alt={actress.name} />
       <div className="card-copy">
-        <strong>{actress.publicName}</strong>
+        <strong>{actress.name}</strong>
       </div>
     </div>
   );
@@ -573,7 +573,7 @@ export default function Home() {
                   {t.tiers[lastChoice.tier]}
                 </span>
                 <strong className="last-choice-name">
-                  {lastChoice.publicName}
+                  {lastChoice.name}
                 </strong>
               </div>
             ) : (

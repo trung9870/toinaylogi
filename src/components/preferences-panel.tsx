@@ -36,7 +36,7 @@ export function PreferencesPanel({
   const shown = useMemo(
     () =>
       actresses.filter((item) =>
-        item.publicName
+        item.name
           .toLocaleLowerCase()
           .includes(search.toLocaleLowerCase()),
       ),
@@ -122,7 +122,7 @@ export function PreferencesPanel({
                     })
                   }
                 />
-                <span>{item.publicName}</span>
+                <span>{item.name}</span>
                 <small>{tierNames[item.tier]}</small>
               </label>
             ))}
